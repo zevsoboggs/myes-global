@@ -1,0 +1,303 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Performance optimizations */
+@layer utilities {
+  .will-change-transform {
+    will-change: transform;
+  }
+  .will-change-opacity {
+    will-change: opacity;
+  }
+  .gpu-accelerate {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+}
+
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Preloader Animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+@keyframes float-delayed {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(-180deg); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(90deg); }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes fade-in-out {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes spin-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 8s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-float-slow {
+  animation: float-slow 10s ease-in-out infinite;
+  will-change: transform;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+  will-change: transform;
+}
+
+.animate-fade-in-out {
+  animation: fade-in-out 2s ease-in-out infinite;
+  will-change: opacity;
+}
+
+.animate-spin-reverse {
+  animation: spin-reverse 3s linear infinite;
+  will-change: transform;
+}
+
+/* Optimize blob animation */
+.animate-blob {
+  animation: blob 7s infinite;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* Optimize gradient animation */
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradient 3s ease infinite;
+  will-change: background-position;
+}
+
+/* === Print: Receipt Document === */
+@page {
+  size: A4;
+  margin: 12mm;
+}
+
+/* Focus states for accessibility */
+*:focus-visible {
+  outline: 2px solid rgb(59, 130, 246);
+  outline-offset: 2px;
+}
+
+/* Better text rendering */
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* === Dashboard density (compact) === */
+.dashboard-compact .p-6 { padding: 1rem !important; }
+.dashboard-compact .p-5 { padding: 0.875rem !important; }
+.dashboard-compact .p-4 { padding: 0.75rem !important; }
+.dashboard-compact .px-6 { padding-left: 1rem !important; padding-right: 1rem !important; }
+.dashboard-compact .py-8 { padding-top: 1.25rem !important; padding-bottom: 1.25rem !important; }
+.dashboard-compact .gap-6 { gap: 1rem !important; }
+.dashboard-compact .gap-4 { gap: 0.75rem !important; }
+.dashboard-compact .rounded-2xl { border-radius: 0.75rem !important; }
+.dashboard-compact .text-4xl { font-size: 1.875rem !important; line-height: 2.25rem !important; }
+.dashboard-compact .text-3xl { font-size: 1.5rem !important; line-height: 2rem !important; }
+.dashboard-compact .text-2xl { font-size: 1.25rem !important; line-height: 1.75rem !important; }
+.dashboard-compact .text-xl { font-size: 1.125rem !important; line-height: 1.5rem !important; }
+.dashboard-compact .py-3 { padding-top: 0.625rem !important; padding-bottom: 0.625rem !important; }
+.dashboard-compact .px-4 { padding-left: 0.75rem !important; padding-right: 0.75rem !important; }
+.dashboard-compact .px-6 { padding-left: 1rem !important; padding-right: 1rem !important; }
+.dashboard-compact .h-16 { height: 3rem !important; }
+.dashboard-compact .w-16 { width: 3rem !important; }
+
+/* Mobile optimizations */
+@media (max-width: 640px) {
+  /* Reduce animations on mobile for performance */
+  .animate-blob,
+  .animate-float,
+  .animate-gradient {
+    animation-duration: 10s;
+  }
+  
+  /* Simplify shadows on mobile */
+  .shadow-xl {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .shadow-2xl {
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+  }
+}
+
+@media print {
+  html, body {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Скрыть всё, кроме чека */
+  body * {
+    visibility: hidden;
+  }
+
+  /* Показать только чек и его содержимое */
+  .receipt-document, .receipt-document * {
+    visibility: visible !important;
+  }
+
+  /* Позиционирование чека */
+  .receipt-document {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 20px !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    color: #000000 !important;
+    background: #ffffff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .receipt-document a,
+  .receipt-document a:visited {
+    color: #000000 !important;
+    text-decoration: none !important;
+  }
+
+  .receipt-document img {
+    filter: none !important;
+    max-width: 100% !important;
+  }
+
+  /* Избегать разрывов внутри ключевых секций */
+  .receipt-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Прятать любые элементы управления */
+  .no-print, .print\\:hidden {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  /* Убрать отступы и поля для контейнеров */
+  .receipt-document .max-w-4xl,
+  .receipt-document .mx-auto,
+  .receipt-document .px-4,
+  .receipt-document .md\\:px-6,
+  .receipt-document .lg\\:px-8,
+  .receipt-document .py-6,
+  .receipt-document .md\\:py-10 {
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Оптимизация шрифтов для печати */
+  .receipt-document {
+    font-size: 12px !important;
+    line-height: 1.4 !important;
+    font-family: Poppins, Arial, sans-serif !important;
+  }
+
+  .receipt-document h1 {
+    font-size: 24px !important;
+    margin-bottom: 10px !important;
+  }
+
+  .receipt-document h2 {
+    font-size: 18px !important;
+    margin-bottom: 8px !important;
+  }
+
+  /* Оптимизация элементов чека для печати */
+  .receipt-document .text-2xl {
+    font-size: 18px !important;
+  }
+
+  .receipt-document .text-lg {
+    font-size: 14px !important;
+  }
+
+  .receipt-document .text-sm {
+    font-size: 11px !important;
+  }
+
+  .receipt-document .text-xs {
+    font-size: 10px !important;
+  }
+
+  /* Убираем градиенты и тени */
+  .receipt-document .bg-gradient-to-r,
+  .receipt-document .bg-blue-50,
+  .receipt-document .bg-emerald-50,
+  .receipt-document .bg-gray-50 {
+    background: #f8f9fa !important;
+  }
+
+  .receipt-document .border-blue-200,
+  .receipt-document .border-emerald-200,
+  .receipt-document .border-gray-200,
+  .receipt-document .border-gray-100 {
+    border-color: #dee2e6 !important;
+  }
+
+  /* Оптимизируем цвета для печати */
+  .receipt-document .text-blue-700,
+  .receipt-document .text-blue-900 {
+    color: #212529 !important;
+  }
+
+  .receipt-document .text-emerald-700,
+  .receipt-document .text-emerald-900 {
+    color: #212529 !important;
+  }
+
+  .receipt-document .text-gray-600,
+  .receipt-document .text-gray-700,
+  .receipt-document .text-gray-800,
+  .receipt-document .text-gray-900 {
+    color: #212529 !important;
+  }
+}

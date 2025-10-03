@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MYES.GLOBAL Properties API Demo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50">
+  <div class="container mx-auto px-4 py-8 max-w-6xl">
+    <header class="mb-8">
+      <h1 class="text-4xl font-bold text-gray-900 mb-2">MYES.GLOBAL Properties API</h1>
+      <p class="text-gray-600">Interactive API Demo & Testing Tool</p>
+    </header>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+      <h2 class="text-2xl font-semibold mb-4">Filters</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Country</label>
+          <input type="text" id="country" placeholder="UAE, Thailand, Turkey..." class="w-full px-3 py-2 border border-gray-300 rounded-md">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Property Type</label>
+          <select id="type" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+            <option value="">All</option>
+            <option value="apartment">Apartment</option>
+            <option value="house">House</option>
+            <option value="villa">Villa</option>
+            <option value="commercial">Commercial</option>
+            <option value="land">Land</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Bedrooms</label>
+          <input type="number" id="bedrooms" placeholder="3" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Min Price (USDT)</label>
+          <input type="number" id="min_price" placeholder="100000" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Max Price (USDT)</label>
+          <input type="number" id="max_price" placeholder="500000" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+          <input type="text" id="search" placeholder="beachfront, pool..." class="w-full px-3 py-2 border border-gray-300 rounded-md">
+        </div>
+      </div>
+      <div class="mt-4 flex gap-4">
+        <button onclick="fetchProperties()" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+          🔍 Search Properties
+        </button>
+        <button onclick="clearFilters()" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300">
+          🔄 Clear Filters
+        </button>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="loading" class="hidden text-center py-8">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+      <p class="text-gray-600 mt-4">Loading properties...</p>
+    </div>
+
+    <div id="error" class="hidden bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6"></div>
+
+    <div id="results" class="hidden">
+      <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-2xl font-semibold">Results</h2>
+          <div class="text-sm text-gray-600">
+            Total: <span id="total" class="font-bold">0</span> properties
+          </div>
+        </div>
+        <div id="properties" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+      </div>
+
+      <!-- Pagination -->
+      <div id="pagination" class="flex justify-center gap-2 mb-6"></div>
+    </div>
+
+    <!-- API Info -->
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-2xl font-semibold mb-4">API Endpoint</h2>
+      <div class="bg-gray-50 p-4 rounded border border-gray-200">
+        <code id="apiUrl" class="text-sm text-gray-800 break-all"></code>
+      </div>
+      <button onclick="copyApiUrl()" class="mt-4 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+        📋 Copy API URL
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const BASE_URL = 'https://vfvpyoxafsdlubhctvse.supabase.co/functions/v1/properties-api';
+    let currentPage = 0;
+    const limit = 9;
+
+    function getFilters() {
+      const filters = {};
+      const country = document.getElementById('country').value;
+      const type = document.getElementById('type').value;
+      const bedrooms = document.getElementById('bedrooms').value;
+      const minPrice = document.getElementById('min_price').value;
+      const maxPrice = document.getElementById('max_price').value;
+      const search = document.getElementById('search').value;
+
+      if (country) filters.country = country;
+      if (type) filters.type = type;
+      if (bedrooms) filters.bedrooms = bedrooms;
+      if (minPrice) filters.min_price = minPrice;
+      if (maxPrice) filters.max_price = maxPrice;
+      if (search) filters.search = search;
+      filters.limit = limit;
+      filters.offset = currentPage * limit;
+
+      return filters;
+    }
+
+    function buildApiUrl(filters) {
+      const params = new URLSearchParams(filters);
+      return `${BASE_URL}?${params.toString()}`;
+    }
+
+    async function fetchProperties() {
+      const filters = getFilters();
+      const url = buildApiUrl(filters);
+
+      document.getElementById('apiUrl').textContent = url;
+      document.getElementById('loading').classList.remove('hidden');
+      document.getElementById('error').classList.add('hidden');
+      document.getElementById('results').classList.add('hidden');
+
+      try {
+        const response = await fetch(url);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        displayResults(data);
+        displayPagination(data.pagination);
+      } catch (error) {
+        showError(`Error fetching properties: ${error.message}`);
+      } finally {
+        document.getElementById('loading').classList.add('hidden');
+      }
+    }
+
+    function displayResults(data) {
+      const container = document.getElementById('properties');
+      container.innerHTML = '';
+
+      document.getElementById('total').textContent = data.pagination.total;
+      document.getElementById('results').classList.remove('hidden');
+
+      if (data.data.length === 0) {
+        container.innerHTML = '<div class="col-span-3 text-center text-gray-500 py-8">No properties found</div>';
+        return;
+      }
+
+      data.data.forEach(property => {
+        const card = document.createElement('div');
+        card.className = 'bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow';
+        card.innerHTML = `
+          <div class="aspect-video bg-gray-200 relative">
+            ${property.primary_image
+              ? `<img src="${property.primary_image}" alt="${property.title}" class="w-full h-full object-cover">`
+              : '<div class="w-full h-full flex items-center justify-center text-gray-400">No Image</div>'
+            }
+            <div class="absolute top-2 right-2 bg-white px-2 py-1 rounded-md text-sm font-semibold">
+              $${property.price_usdt.toLocaleString()}
+            </div>
+          </div>
+          <div class="p-4">
+            <h3 class="font-semibold text-lg mb-2 truncate">${property.title}</h3>
+            <p class="text-sm text-gray-600 mb-2">${property.city}, ${property.country}</p>
+            <div class="flex items-center gap-4 text-sm text-gray-700">
+              <span>🛏️ ${property.bedrooms || 0}</span>
+              <span>🚿 ${property.bathrooms || 0}</span>
+              <span>📐 ${property.area_sqm || 0} m²</span>
+            </div>
+            <div class="mt-3 flex items-center justify-between">
+              <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">${property.property_type}</span>
+              <span class="text-xs text-gray-500">${property.images.length} photos</span>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function displayPagination(pagination) {
+      const container = document.getElementById('pagination');
+      container.innerHTML = '';
+
+      const totalPages = Math.ceil(pagination.total / limit);
+
+      // Previous button
+      const prevBtn = document.createElement('button');
+      prevBtn.textContent = '← Previous';
+      prevBtn.className = `px-4 py-2 rounded-md ${currentPage === 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`;
+      prevBtn.disabled = currentPage === 0;
+      prevBtn.onclick = () => {
+        if (currentPage > 0) {
+          currentPage--;
+          fetchProperties();
+        }
+      };
+      container.appendChild(prevBtn);
+
+      // Page info
+      const pageInfo = document.createElement('span');
+      pageInfo.className = 'px-4 py-2 text-gray-700';
+      pageInfo.textContent = `Page ${currentPage + 1} of ${totalPages}`;
+      container.appendChild(pageInfo);
+
+      // Next button
+      const nextBtn = document.createElement('button');
+      nextBtn.textContent = 'Next →';
+      nextBtn.className = `px-4 py-2 rounded-md ${!pagination.has_more ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`;
+      nextBtn.disabled = !pagination.has_more;
+      nextBtn.onclick = () => {
+        if (pagination.has_more) {
+          currentPage++;
+          fetchProperties();
+        }
+      };
+      container.appendChild(nextBtn);
+    }
+
+    function showError(message) {
+      const errorDiv = document.getElementById('error');
+      errorDiv.textContent = message;
+      errorDiv.classList.remove('hidden');
+    }
+
+    function clearFilters() {
+      document.getElementById('country').value = '';
+      document.getElementById('type').value = '';
+      document.getElementById('bedrooms').value = '';
+      document.getElementById('min_price').value = '';
+      document.getElementById('max_price').value = '';
+      document.getElementById('search').value = '';
+      currentPage = 0;
+      fetchProperties();
+    }
+
+    function copyApiUrl() {
+      const url = document.getElementById('apiUrl').textContent;
+      navigator.clipboard.writeText(url).then(() => {
+        alert('API URL copied to clipboard!');
+      });
+    }
+
+    // Load properties on page load
+    window.onload = () => {
+      fetchProperties();
+    };
+  </script>
+</body>
+</html>
